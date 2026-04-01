@@ -1,0 +1,116 @@
+{% extends 'budget/base.html' %}
+{% load static %}
+
+{% block title %}Générer un rapport{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header bg-primary text-white">
+            <i class="fas fa-chart-bar"></i>
+            Générer un rapport PDF
+        </div>
+        
+        <div class="form-body">
+            <form method="post" id="rapportForm">
+                {% csrf_token %}
+                
+                <!-- Période -->
+                <div class="form-group">
+                    <label class="form-label">Période du rapport</label>
+                    <div class="periode-options">
+                        <label class="periode-option">
+                            <input type="radio" name="periode" value="mois" checked>
+                            <span><i class="fas fa-calendar-alt"></i> Ce mois-ci</span>
+                        </label>
+                        <label class="periode-option">
+                            <input type="radio" name="periode" value="trimestre">
+                            <span><i class="fas fa-calendar-week"></i> Ce trimestre</span>
+                        </label>
+                        <label class="periode-option">
+                            <input type="radio" name="periode" value="annee">
+                            <span><i class="fas fa-calendar"></i> Cette année</span>
+                        </label>
+                        <label class="periode-option">
+                            <input type="radio" name="periode" value="personnalise">
+                            <span><i class="fas fa-calendar-plus"></i> Personnalisé</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Dates personnalisées -->
+                <div class="row d-none" id="datesPerso">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Date de début</label>
+                            <input type="date" name="date_debut" class="form-control" 
+                                   value="{{ now|date:'Y-m-01' }}">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Date de fin</label>
+                            <input type="date" name="date_fin" class="form-control" 
+                                   value="{{ now|date:'Y-m-d' }}">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Aperçu -->
+                <div class="stats-apercu">
+                    <p>Total des transactions : <strong>{{ total_transactions }}</strong></p>
+                </div>
+                
+                <!-- Boutons -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-file-pdf"></i> Générer le PDF
+                    </button>
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline">
+                        Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const radios = document.querySelectorAll('input[name="periode"]');
+    const datesPerso = document.getElementById('datesPerso');
+    
+    radios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'personnalise') {
+                datesPerso.classList.remove('d-none');
+            } else {
+                datesPerso.classList.add('d-none');
+            }
+        });
+    });
+    
+    // Validation
+    document.getElementById('rapportForm').addEventListener('submit', function(e) {
+        const periode = document.querySelector('input[name="periode"]:checked').value;
+        
+        if (periode === 'personnalise') {
+            const dateDebut = document.querySelector('input[name="date_debut"]').value;
+            const dateFin = document.querySelector('input[name="date_fin"]').value;
+            
+            if (!dateDebut || !dateFin) {
+                e.preventDefault();
+                alert('Veuillez sélectionner les dates');
+                return;
+            }
+            
+            if (new Date(dateDebut) > new Date(dateFin)) {
+                e.preventDefault();
+                alert('La date de début doit être antérieure à la date de fin');
+                return;
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

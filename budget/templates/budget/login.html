@@ -1,0 +1,63 @@
+{% extends 'budget/base.html' %}
+{% load static %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <i class="fas fa-wallet fa-3x"></i>
+            <h2>Mon Budget Poche</h2>
+            <p class="text-muted">Connectez-vous à votre compte</p>
+        </div>
+        
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                Nom d'utilisateur ou mot de passe incorrect.
+            </div>
+            {% endif %}
+            
+            <div class="form-group">
+                <label for="id_username">
+                    <i class="fas fa-user"></i> Nom d'utilisateur
+                </label>
+                <input type="text" name="username" id="id_username" 
+                       class="form-control" required autofocus
+                       placeholder="Entrez votre nom d'utilisateur">
+            </div>
+            
+            <div class="form-group">
+                <label for="id_password">
+                    <i class="fas fa-lock"></i> Mot de passe
+                </label>
+                <input type="password" name="password" id="id_password" 
+                       class="form-control" required
+                       placeholder="Entrez votre mot de passe">
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block">
+                <i class="fas fa-sign-in-alt"></i> Se connecter
+            </button>
+        </form>
+        
+        <div class="auth-footer">
+            <p>Pas encore de compte ?</p>
+            <a href="{% url 'inscription' %}" class="btn btn-outline">
+                <i class="fas fa-user-plus"></i> Créer un compte
+            </a>
+        </div>
+        
+        <!-- Démo -->
+        <div class="demo-account">
+            <p class="text-muted small mb-2">👋 Compte de démonstration</p>
+            <p class="small mb-0">Utilisateur: <strong>demo</strong></p>
+            <p class="small">Mot de passe: <strong>demo1234</strong></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

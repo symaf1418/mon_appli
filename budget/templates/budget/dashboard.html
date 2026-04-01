@@ -1,0 +1,124 @@
+{% extends 'budget/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Actions rapides -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="quick-actions">
+                    <a href="{% url 'ajouter_revenu' %}" class="btn btn-success">
+                        <i class="fas fa-plus-circle"></i> Revenu
+                    </a>
+                    <a href="{% url 'ajouter_depense' %}" class="btn btn-danger">
+                        <i class="fas fa-minus-circle"></i> Dépense
+                    </a>
+                    <a href="{% url 'journal' %}" class="btn btn-primary">
+                        <i class="fas fa-history"></i> Journal
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Solde actuel -->
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="solde-card">
+            <div class="solde-label">SOLDE ACTUEL</div>
+            <div class="solde-amount" id="soldeActuel">{{ profil.solde_actuel|floatformat:2 }} FCFA</div>
+            <div class="solde-details">
+                <span class="badge">Revenus mois: {{ revenus_mois }}</span>
+                <span class="badge">Dépenses mois: {{ depenses_mois }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alertes -->
+{% if alertes %}
+<div class="row">
+    <div class="col-12">
+        {% for niveau, message in alertes %}
+        <div class="alert alert-{{ niveau }}">
+            <i class="fas {% if niveau == 'danger' %}fa-exclamation-triangle{% else %}fa-exclamation-circle{% endif %}"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Statistiques -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: var(--primary);">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-value">{{ taux_epargne }}%</div>
+            <div class="stat-label">Taux d'épargne</div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: var(--warning);">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="stat-value">{{ seuil_mensuel_pct }}%</div>
+            <div class="stat-label">Budget mensuel utilisé</div>
+            <div class="progress">
+                <div class="progress-bar {% if seuil_mensuel_pct > 80 %}warning{% endif %} {% if seuil_mensuel_pct > 100 %}danger{% endif %}" 
+                     style="width: {{ seuil_mensuel_pct }}%"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dernières transactions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-history"></i> Dernières transactions
+            </div>
+            <div class="card-body">
+                {% if dernieres_transactions %}
+                <div class="transaction-list">
+                    {% for t in dernieres_transactions %}
+                    <div class="transaction-item">
+                        <div class="transaction-icon {% if t.type == 'REVENU' %}revenu{% else %}depense{% endif %}">
+                            <i class="fas {% if t.type == 'REVENU' %}fa-arrow-up{% else %}fa-arrow-down{% endif %}"></i>
+                        </div>
+                        <div class="transaction-details">
+                            <div class="transaction-category">
+                                {% if t.categorie %}
+                                    {{ t.categorie.icone }} {{ t.categorie.nom }}
+                                {% else %}
+                                    {{ t.description|default:"Sans libellé"|truncatechars:30 }}
+                                {% endif %}
+                            </div>
+                            <div class="transaction-date">{{ t.date|date:"d/m/Y H:i" }}</div>
+                        </div>
+                        <div class="transaction-amount {% if t.type == 'REVENU' %}text-success{% else %}text-danger{% endif %}">
+                            {% if t.type == 'REVENU' %}+{% else %}-{% endif %}{{ t.montant|floatformat:2 }} FCFA
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-center text-muted py-4">Aucune transaction pour le moment</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'budget/js/dashboard.js' %}"></script>
+{% endblock %}

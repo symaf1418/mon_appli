@@ -1,0 +1,120 @@
+{% extends 'budget/base.html' %}
+{% load static %}
+
+{% block title %}Ajouter une dépense{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header bg-danger text-white">
+            <i class="fas fa-minus-circle"></i>
+            Nouvelle dépense
+        </div>
+        
+        <div class="form-body">
+            <!-- Solde actuel -->
+            <div class="solde-info">
+                <span class="label">Solde actuel</span>
+                <span class="valeur" id="soldeActuel">{{ solde_actuel|floatformat:2 }}FCFA</span>
+            </div>
+            
+            <form method="post" id="formDepense">
+                {% csrf_token %}
+                
+                <!-- Montant -->
+                <div class="form-group">
+                    <label class="form-label">Montant (FCFA) *</label>
+                    <input type="number" name="montant" class="form-control form-control-lg" 
+                           step="0.01" min="0.01" required 
+                           value="{{ form.montant.value|default:'' }}"
+                           placeholder="0.00" id="montantInput">
+                    {% if form.montant.errors %}
+                        <div class="error-message">{{ form.montant.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Catégorie -->
+                <div class="form-group">
+                    <label class="form-label">Catégorie *</label>
+                    <select name="categorie" class="form-control" required>
+                        <option value="">--- Choisir une catégorie ---</option>
+                        {% for cat in form.fields.categorie.queryset %}
+                            <option value="{{ cat.id }}" 
+                                    style="background-color: {{ cat.couleur }}20;"
+                                    {% if form.categorie.value == cat.id %}selected{% endif %}>
+                                {{ cat.icone }} {{ cat.nom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    {% if form.categorie.errors %}
+                        <div class="error-message">{{ form.categorie.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Date -->
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="datetime-local" name="date" class="form-control" 
+                           value="{{ form.date.value|default:'' }}" required>
+                </div>
+                
+                <!-- Nouveau solde estimé -->
+                <div class="solde-estime warning" id="soldeEstime">
+                    <i class="fas fa-calculator"></i>
+                    <span>Nouveau solde estimé :</span>
+                    <strong id="nouveauSolde">{{ solde_actuel|floatformat:2 }} FCFA</strong>
+                </div>
+                
+                <!-- Alerte solde insuffisant -->
+                <div class="alert alert-danger d-none" id="alerteSolde">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Attention : Cette dépense dépassera votre solde !
+                </div>
+                
+                <!-- Boutons -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-check"></i> Ajouter
+                    </button>
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline">
+                        Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const montantInput = document.getElementById('montantInput');
+    const nouveauSoldeSpan = document.getElementById('nouveauSolde');
+    const alerteSolde = document.getElementById('alerteSolde');
+    const soldeEstimeDiv = document.getElementById('soldeEstime');
+    const soldeActuel = {{ solde_actuel|safe }};
+    
+    function updateSolde() {
+        const montant = parseFloat(montantInput.value) || 0;
+        const nouveauSolde = soldeActuel - montant;
+        nouveauSoldeSpan.textContent = nouveauSolde.toFixed(2).replace('.', ',') + ' FCFA';
+        
+        // Gérer les alertes
+        if (nouveauSolde < 0) {
+            nouveauSoldeSpan.style.color = '#dc3545';
+            alerteSolde.classList.remove('d-none');
+            soldeEstimeDiv.classList.remove('warning');
+            soldeEstimeDiv.classList.add('danger');
+        } else {
+            nouveauSoldeSpan.style.color = '';
+            alerteSolde.classList.add('d-none');
+            soldeEstimeDiv.classList.add('warning');
+            soldeEstimeDiv.classList.remove('danger');
+        }
+    }
+    
+    if (montantInput) {
+        montantInput.addEventListener('input', updateSolde);
+    }
+});
+</script>
+{% endblock %}

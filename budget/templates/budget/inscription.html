@@ -1,0 +1,92 @@
+{% extends 'budget/base.html' %}
+{% load static %}
+
+{% block title %}Inscription{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <i class="fas fa-user-plus fa-3x" style="color: var(--success);"></i>
+            <h2>Créer un compte</h2>
+            <p class="text-muted">Commencez à gérer votre budget en quelques clics</p>
+        </div>
+        
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                <strong>Erreurs :</strong>
+                <ul class="mb-0 mt-2">
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <div class="form-group">
+                <label for="id_username">
+                    <i class="fas fa-user"></i> Nom d'utilisateur
+                </label>
+                <input type="text" name="username" id="id_username" 
+                       class="form-control" required
+                       value="{{ form.username.value|default:'' }}"
+                       placeholder="Choisissez un nom d'utilisateur">
+                <small class="text-muted">150 caractères max. Lettres, chiffres et @/./+/-/_</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_email">
+                    <i class="fas fa-envelope"></i> Email
+                </label>
+                <input type="email" name="email" id="id_email" 
+                       class="form-control" required
+                       value="{{ form.email.value|default:'' }}"
+                       placeholder="votre@email.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="id_password1">
+                    <i class="fas fa-lock"></i> Mot de passe
+                </label>
+                <input type="password" name="password1" id="id_password1" 
+                       class="form-control" required
+                       placeholder="Minimum 8 caractères">
+                <small class="text-muted">Minimum 8 caractères, pas que des chiffres.</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_password2">
+                    <i class="fas fa-lock"></i> Confirmation
+                </label>
+                <input type="password" name="password2" id="id_password2" 
+                       class="form-control" required
+                       placeholder="Répétez le mot de passe">
+            </div>
+            
+            <div class="form-check mb-3">
+                <input type="checkbox" class="form-check-input" id="accept_terms" required>
+                <label class="form-check-label" for="accept_terms">
+                    J'accepte les <a href="#" target="_blank">conditions d'utilisation</a>
+                </label>
+            </div>
+            
+            <button type="submit" class="btn btn-success btn-block">
+                <i class="fas fa-user-check"></i> S'inscrire
+            </button>
+        </form>
+        
+        <div class="auth-footer">
+            <p>Déjà inscrit ?</p>
+            <a href="{% url 'login' %}" class="btn btn-outline">
+                <i class="fas fa-sign-in-alt"></i> Se connecter
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends 'budget/base.html' %}
+{% load static %}
+
+{% block title %}Journal des transactions{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-history"></i>
+        Journal des transactions
+    </div>
+    <div class="card-body">
+        {% if transactions %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Libellé</th>
+                        <th>Montant</th>
+                        <th>Solde après</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in transactions %}
+                    <tr>
+                        <td>{{ t.date|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <span class="badge {% if t.type == 'REVENU' %}badge-success{% else %}badge-danger{% endif %}">
+                                {{ t.get_type_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if t.categorie %}
+                                {{ t.categorie.icone }} {{ t.categorie.nom }}
+                            {% else %}
+                                {{ t.description|default:"-" }}
+                            {% endif %}
+                        </td>
+                        <td class="{% if t.type == 'REVENU' %}text-success{% else %}text-danger{% endif %}">
+                            {% if t.type == 'REVENU' %}+{% else %}-{% endif %}{{ t.montant|floatformat:2 }} FCFA
+                        </td>
+                        <td>{{ t.solde_apres|floatformat:2 }} FCFA</td>
+                        <td>
+                            <form method="post" action="{% url 'supprimer_transaction' t.id %}" 
+                                  class="d-inline" 
+                                  onsubmit="return confirm('Supprimer cette transaction ?')">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if transactions.has_other_pages %}
+        <div class="pagination">
+            {% if transactions.has_previous %}
+                <a href="?page=1" class="page-link">&laquo;</a>
+                <a href="?page={{ transactions.previous_page_number }}" class="page-link">&lsaquo;</a>
+            {% endif %}
+            
+            <span class="page-current">
+                Page {{ transactions.number }} sur {{ transactions.paginator.num_pages }}
+            </span>
+            
+            {% if transactions.has_next %}
+                <a href="?page={{ transactions.next_page_number }}" class="page-link">&rsaquo;</a>
+                <a href="?page={{ transactions.paginator.num_pages }}" class="page-link">&raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-receipt fa-4x"></i>
+            <h3>Aucune transaction</h3>
+            <p>Commencez par ajouter un revenu ou une dépense.</p>
+            <div class="empty-actions">
+                <a href="{% url 'ajouter_revenu' %}" class="btn btn-success">
+                    <i class="fas fa-plus-circle"></i> Premier revenu
+                </a>
+                <a href="{% url 'ajouter_depense' %}" class="btn btn-danger">
+                    <i class="fas fa-minus-circle"></i> Première dépense
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

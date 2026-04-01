@@ -1,0 +1,104 @@
+{% extends 'budget/base.html' %}
+{% load static %}
+
+{% block title %}Paramètres{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <!-- Profil -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-user"></i> Mon profil
+            </div>
+            <div class="card-body">
+                <div class="profile-info">
+                    <div class="avatar">
+                        <span>{{ user.username|first|upper }}</span>
+                    </div>
+                    <div class="info">
+                        <h4>{{ user.username }}</h4>
+                        <p class="text-muted">{{ user.email }}</p>
+                        <p class="small">Membre depuis {{ user.date_joined|date:"d/m/Y" }}</p>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" 
+                               value="{{ user.email }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Mettre à jour
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Seuils -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <i class="fas fa-chart-line"></i> Seuils de budget
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label class="form-label">Budget mensuel (FCFA)</label>
+                        <input type="number" name="seuil_mensuel" class="form-control" 
+                               value="{{ form_seuils.seuil_mensuel.value|default:profil.seuil_mensuel }}" 
+                               step="10" min="0">
+                        <small class="text-muted">
+                            Dépenses ce mois: {{ profil.total_depenses_mois|floatformat:2 }} FCFA
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Budget annuel (FCFA)</label>
+                        <input type="number" name="seuil_annuel" class="form-control" 
+                               value="{{ form_seuils.seuil_annuel.value|default:profil.seuil_annuel }}" 
+                               step="100" min="0">
+                        <small class="text-muted">
+                            Dépenses cette année: {{ profil.total_depenses_annee|floatformat:2 }} FCFA
+                        </small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Enregistrer les seuils
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Statistiques -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <i class="fas fa-chart-pie"></i> Statistiques
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="stat-mini">
+                            <span class="label">Total transactions</span>
+                            <span class="value">{{ total_transactions|default:"0" }}</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-mini">
+                            <span class="label">Solde actuel</span>
+                            <span class="value {% if profil.solde_actuel < 0 %}text-danger{% endif %}">
+                                {{ profil.solde_actuel|floatformat:2 }} FCFA
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

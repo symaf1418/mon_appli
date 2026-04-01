@@ -1,0 +1,96 @@
+{% extends 'budget/base.html' %}
+{% load static %}
+
+{% block title %}Ajouter un revenu{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header bg-success text-white">
+            <i class="fas fa-plus-circle"></i>
+            Nouveau revenu
+        </div>
+        
+        <div class="form-body">
+            <!-- Solde actuel -->
+            <div class="solde-info">
+                <span class="label">Solde actuel</span>
+                <span class="valeur" id="soldeActuel">{{ solde_actuel|floatformat:2 }} FCFA</span>
+            </div>
+            
+            <form method="post" id="formRevenu">
+                {% csrf_token %}
+                
+                <!-- Montant -->
+                <div class="form-group">
+                    <label class="form-label">Montant (FCFA) *</label>
+                    <input type="number" name="montant" class="form-control form-control-lg" 
+                           step="0.01" min="0.01" required 
+                           value="{{ form.montant.value|default:'' }}"
+                           placeholder="0.00" id="montantInput">
+                    {% if form.montant.errors %}
+                        <div class="error-message">{{ form.montant.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Description -->
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <input type="text" name="description" class="form-control" 
+                           value="{{ form.description.value|default:'' }}"
+                           placeholder="Salaire, Freelance, Cadeau...">
+                    <small class="text-muted">Optionnel</small>
+                </div>
+                
+                <!-- Date -->
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="datetime-local" name="date" class="form-control" 
+                           value="{{ form.date.value|default:'' }}" required>
+                </div>
+                
+                <!-- Nouveau solde estimé -->
+                <div class="solde-estime success" id="soldeEstime">
+                    <i class="fas fa-calculator"></i>
+                    <span>Nouveau solde estimé :</span>
+                    <strong id="nouveauSolde">{{ solde_actuel|floatformat:2 }} FCFA</strong>
+                </div>
+                
+                <!-- Boutons -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> Ajouter
+                    </button>
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline">
+                        Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const montantInput = document.getElementById('montantInput');
+    const nouveauSoldeSpan = document.getElementById('nouveauSolde');
+    const soldeEstimeDiv = document.getElementById('soldeEstime');
+    const soldeActuel = {{ solde_actuel|safe }};
+    
+    if (montantInput) {
+        montantInput.addEventListener('input', function() {
+            const montant = parseFloat(this.value) || 0;
+            const nouveauSolde = soldeActuel + montant;
+            nouveauSoldeSpan.textContent = nouveauSolde.toFixed(2).replace('.', ',') + 'FCFA';
+            
+            // Animation si gros montant
+            if (montant > 1000) {
+                soldeEstimeDiv.classList.add('pulse');
+            } else {
+                soldeEstimeDiv.classList.remove('pulse');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
